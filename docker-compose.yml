@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: iris_postgis_db
+    environment:
+      POSTGRES_DB: iris
+      POSTGRES_USER: iris_user
+      POSTGRES_PASSWORD: iris_password   # local development only
+    ports:
+      - "5433:5432"
+    volumes:
+      - iris_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # -h 127.0.0.1 matters: during first-time init the image runs a temporary
+      # server that only listens on the unix socket, so a socket check can pass
+      # too early.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U iris_user -d iris"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  iris_pgdata:
